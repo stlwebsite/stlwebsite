@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YM7W2BEMD1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YM7W2BEMD1');
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Stream Live</title>
+    <style>
+        body {
+            font-family: "Roboto Condensed", sans-serif;
+            color: #3a3838;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .logo{
+           text-align: center;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            height: 100%;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            margin-top: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 15px 0 15px 0;
+            margin: 5px 0 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        input[type="checkbox"] {
+            margin-left: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .inline-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            background-color: #ececec;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .inline-fields {
+            display: flex;
+            width: 100%;
+            align-items: center;
+        }
+        .inline-fields input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .inline-fields input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        let streamCount = 1;
+
+        function addStreamUrl() {
+            if (streamCount < 6) {
+                streamCount++;
+                const newStreamUrl = document.createElement('div');
+                newStreamUrl.className = 'form-group inline-group';
+                newStreamUrl.innerHTML = `
+                    <label for="name${streamCount}">Name ${streamCount}</label>
+                    <input type="text" id="name${streamCount}" name="name${streamCount}" required>
+                    <div class="inline-fields">
+                        <input type="text" id="stream-url${streamCount}" name="stream-url${streamCount}" required placeholder="  Live Stream URL ${streamCount}">
+                        <label for="sandbox${streamCount}">Sandbox</label>
+                        <input type="checkbox" id="sandbox${streamCount}" name="sandbox${streamCount}" checked>
+                    </div>
+                    <button type="button" onclick="removeStreamUrl(this)">Delete</button>
+                `;
+                document.getElementById('stream-urls').appendChild(newStreamUrl);
+                toggleDeleteButtons();
+            }
+        }
+
+        function removeStreamUrl(button) {
+            button.parentElement.remove();
+            streamCount--;
+            toggleDeleteButtons();
+        }
+
+        function toggleDeleteButtons() {
+            const deleteButtons = document.querySelectorAll('.inline-group button');
+            deleteButtons.forEach(button => button.style.display = streamCount > 1 ? 'inline-block' : 'none');
+        }
+
+        function encodeFormToBase64() {
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData).toString();
+            const encodedParams = btoa(params);
+            window.location.href = `live.html?data=${encodedParams}`;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo" bis_skin_checked="1">
+                <a title="Stream Live Chat" href="/"><img src="/logo.jpg" alt="Home" width="250px"></a>
+            </div>
+        <label for="titulo">Generate your own stream with your chat, logo, and ad code.</label>
+        <form onsubmit="event.preventDefault(); encodeFormToBase64();">
+            <div class="form-group">
+                <label for="titulo">Page title</label>
+                <input type="text" id="title" name="titulo" required>
+            </div>
+            <div class="form-group">
+                <label for="chat">Chat</label>
+                <div class="inline-group">
+                    <input type="text" id="chat" name="chat">
+                    <select id="platform" name="platform">
+                        <option value="twitch">  Twitch</option>
+                        <option value="youtube">  YouTube</option>
+                        <option value="kick">  Kick</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group inline-group">
+                <label for="name1">Name 1</label>
+                <input type="text" id="name1" name="name1" required>
+                <div class="inline-fields">
+                    <input type="text" id="stream-url1" name="stream-url1" required placeholder="  Live Stream URL 1 (*)">
+                    <label for="sandbox1">Sandbox</label>
+                    <input type="checkbox" id="sandbox1" name="sandbox1" checked>
+                </div>
+            </div>
+            <div class="form-group" id="stream-urls"></div>
+            <button type="button" onclick="addStreamUrl()">Add more</button>
+            <div class="form-group">
+                <label for="logo">Logo</label>
+                <input type="text" id="logo" name="logo">
+            </div>
+            <div class="form-group">
+                <label for="script">Ads (&lt;script&gt;...&lt;/script&gt;)</label>
+                <textarea id="script" name="script" rows="4"></textarea>
+            </div>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>
+
