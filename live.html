@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Stream Live</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YM7W2BEMD1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YM7W2BEMD1');
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title id="page-title">Stream Live</title>
     <style>
         body {
             display: flex;
@@ -13,95 +20,237 @@
             margin: 0;
             padding: 0;
             font-family: "Roboto Condensed", sans-serif;
-            background-color: #000;
+            background-color: #000000;
         }
-        .columna { padding: 0; box-sizing: border-box; }
-        .columna-80 { flex: 0 0 75%; }
-        .columna-20 { flex: 0 0 25%; height: 100vh; }
-        @media (max-width: 768px) { .columna-80, .columna-20 { flex: 0 0 100%; } }
-        .iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
-        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-        .buttons-container { display: flex; flex-wrap: wrap; margin-top:5px; }
-        .buttons-container button { margin: 2px; padding: 5px 15px; background-color: #e41d25; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
-        .buttons-container button:hover { background-color: #0056b3; }
+        .columna {
+            padding: 0px;
+            box-sizing: border-box;
+        }
+        .columna-80 {
+            flex: 0 0 75%;
+        }
+        .columna-20 {
+            flex: 0 0 25%;
+            height: 100vh;
+        }
+        @media (max-width: 768px) {
+            .columna-80, .columna-20 {
+                flex: 0 0 100%;
+            }
+        }
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+        }
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .top-container {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #18181b;
+            width: 100%;
+        }
+        .logo {
+            max-width: 150px;
+            max-height: 50px;
+            margin-right: 10px;
+        }
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .buttons-container button {
+            margin: 2px;
+            padding: 5px 15px 5px 15px;
+            background-color: #e41d25;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: "Roboto Condensed", sans-serif;
+        }
+        .buttons-container button:hover {
+            background-color: #0056b3;
+        }
+        #link {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
-</head>
-<body>
-    <div class="columna columna-80">
-        <div class="iframe-container"></div>
-        <div id="link" class="buttons-container" style="float:right;"></div>
-    </div>
-
-    <div class="columna columna-20">
-        <iframe id="chat_embed" frameborder="0" scrolling="no" height="100%" width="100%"></iframe>
-    </div>
-
     <script>
-        // Decodifica base64 de parámetros GET
-        function decodeBase64Params(str){
-            const decoded = atob(str);
-            return new URLSearchParams(decoded);
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
         }
 
-        // Obtiene parámetro de URL
-        function getParameterByName(name){
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
-
-        // Crea iframe principal
-        function createPlayer(url){
+        function createIframe(url, sandboxEnabled) {
             const container = document.querySelector('.iframe-container');
-            container.innerHTML = '';
+            container.innerHTML = ''; // Clear existing iframe
+
             const iframe = document.createElement('iframe');
-            iframe.src = url;
-            iframe.frameBorder = 0;
-            iframe.width = '100%';
-            iframe.height = '100%';
+            iframe.src = url.startsWith('http') ? url : 'https://' + url;
+            iframe.frameborder = "0";
+            iframe.width = "100%";
+            iframe.height = "100%";
+            if (sandboxEnabled) {
+                iframe.sandbox = "allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation";
+            }
             container.appendChild(iframe);
         }
 
-        // Configura chat según plataforma
-        function createChat(platform, user){
-            const domain = window.location.hostname;
-            let chatSrc = '';
-            if(platform === 'youtube') chatSrc = `https://www.youtube.com/live_chat?v=${user}&embed_domain=${domain}`;
-            else if(platform === 'twitch') chatSrc = `https://www.twitch.tv/embed/${user}/chat?parent=${domain}`;
-            else if(platform === 'kick') chatSrc = `https://kick.com/${user}/chatroom?embed_domain=${domain}`;
-            if(chatSrc) document.getElementById('chat_embed').src = chatSrc;
-            else document.getElementById('chat_embed').srcdoc = '<p style="color:white;">Chat no disponible</p>';
+        function decodeBase64ToParams(encodedString) {
+            const decodedString = atob(encodedString);
+            const params = new URLSearchParams(decodedString);
+            return params;
         }
 
-        // Botón para copiar link
-        function createShareButton(base64){
-            const container = document.getElementById('link');
-            const btn = document.createElement('button');
-            btn.textContent = 'Copiar link';
-            btn.onclick = async () => {
-                const url = `${window.location.origin}${window.location.pathname}?get=${base64}`;
-                try { await navigator.clipboard.writeText(url); alert('Link copiado: ' + url); }
-                catch(e){ alert('Error copiando link'); }
+        function loadStreams(params) {
+            // Set page title
+            var pageTitle = params.get('titulo');
+            if (pageTitle) {
+                document.title = pageTitle;
+                document.getElementById('page-title').textContent = pageTitle;
+            }
+
+            // Create top container for logo and buttons
+            var topContainer = document.createElement('div');
+            topContainer.className = 'top-container';
+
+            // Set logo
+            var logoUrl = params.get('logo');
+            var logoLink = document.createElement('a');
+            logoLink.href = '/'; // Enlace a la página principal
+            var logoImg = document.createElement('img');
+            logoImg.className = 'logo';
+            if (logoUrl) {
+                logoImg.src = logoUrl;
+            } else {
+                logoImg.src = '/logo.jpg';
+            }
+            logoLink.appendChild(logoImg);
+            topContainer.appendChild(logoLink);
+
+            // Set buttons container
+            var buttonsContainer = document.createElement('div');
+            buttonsContainer.className = 'buttons-container';
+            topContainer.appendChild(buttonsContainer);
+
+            document.body.insertBefore(topContainer, document.body.firstChild);
+
+            // Set chat
+            var chatChannel = params.get('chat');
+            if (chatChannel) {
+                var platform = params.get('platform');
+                var chatIframe = document.getElementById('chat_embed');
+                if (platform === 'youtube') {
+                    chatIframe.src = `https://www.youtube.com/live_chat?v=${chatChannel}&embed_domain=streamlivechat.dev.ar`;
+                } else if (platform === 'kick') {
+                    chatIframe.src = `https://player.kick.com/${chatChannel}/chat?theme=dark`;
+                } else {
+                    chatIframe.src = `https://www.twitch.tv/embed/${chatChannel}/chat?darkpopout&no-mobile-redirect=true&parent=streamlivechat.dev.ar`;
+                }
+            }
+
+            // Set streams
+            for (let i = 1; i <= 6; i++) {
+                var streamUrl = params.get(`stream-url${i}`);
+                var streamName = params.get(`name${i}`);
+                var sandbox = params.get(`sandbox${i}`) !== null;
+
+                if (streamUrl && streamName) {
+                    var button = document.createElement('button');
+                    button.textContent = streamName;
+                    button.onclick = (function(url, sandboxEnabled) {
+                        return function() {
+                            createIframe(url, sandboxEnabled);
+                        };
+                    })(streamUrl, sandbox);
+                    buttonsContainer.appendChild(button);
+
+                    // Set the first stream as default
+                    if (i === 1) {
+                        button.click();
+                    }
+                }
+            }
+
+            // Set script
+            var scriptContent = params.get('script');
+            if (scriptContent) {
+                var scriptTag = document.createElement('script');
+                scriptTag.textContent = scriptContent;
+                document.body.appendChild(scriptTag);
+            }
+        }
+
+        function createShareButton(encodedString) {
+            const shareButton = document.createElement('button');
+            shareButton.textContent = 'Copy Link';
+            shareButton.onclick = async function() {
+                const url = `https://streamlivechat.dev.ar/live.html?data=${encodedString}`;
+                const shortenedUrl = await shortenUrl(url);
+                navigator.clipboard.writeText(shortenedUrl)
+                    .then(() => alert('Link copied to clipboard: ' + shortenedUrl))
+                    .catch(err => console.error('Error copying link: ', err));
             };
-            container.appendChild(btn);
+            const linkContainer = document.getElementById('link');
+            linkContainer.appendChild(shareButton);
         }
 
-        // Carga todo
-        window.onload = function(){
-            const encoded = getParameterByName('get');
-            if(!encoded) return;
+        async function shortenUrl(longUrl) {
+            const apiUrl = `https://api.tinyurl.com/create?api_token=YOUR_TINYURL_API_TOKEN`;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: longUrl })
+            });
 
-            const params = decodeBase64Params(encoded);
-            const playerUrl = params.get('player'); // URL del iframe
-            const chatPlatform = params.get('platform'); // youtube, twitch, kick
-            const chatUser = params.get('chat'); // ID o usuario del chat
-            const title = params.get('titulo');
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                return jsonResponse.data.tiny_url;
+            } else {
+                console.error('Error shortening URL:', response.status, response.statusText);
+                return longUrl;
+            }
+        }
 
-            if(title) document.title = title;
-
-            if(playerUrl) createPlayer(playerUrl);
-            if(chatPlatform && chatUser) createChat(chatPlatform, chatUser);
-            createShareButton(encoded);
+        window.onload = function() {
+            const encodedData = getParameterByName('data');
+            if (encodedData) {
+                const params = decodeBase64ToParams(encodedData);
+                loadStreams(params);
+                createShareButton(encodedData);
+            }
         }
     </script>
+</head>
+<body>
+    <div class="columna columna-80">
+        <div class="iframe-container">
+            <!-- Iframe will be inserted here -->
+        </div>
+        <div id="link"></div>
+    </div>
+    <div class="columna columna-20">
+        <iframe id="chat_embed" src="https://www.twitch.tv/embed/XXXXXX/chat?darkpopout&no-mobile-redirect=true&parent=streamlivechat.dev.ar" height="100%" width="100%" style="border: 0px;"></iframe>
+    </div>
 </body>
 </html>
