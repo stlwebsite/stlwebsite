@@ -2,98 +2,45 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Live Stream</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream Live</title>
   <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-    }
-    .container {
-      display: flex;
-      flex-direction: row;
-      height: 100vh;
-      width: 100%;
-    }
-    .player {
-      flex: 3;
-      background: #111;
-    }
-    .chat {
-      flex: 1;
-      background: #222;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    @media(max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-      .player, .chat {
-        flex: 1;
-        height: 50vh;
-      }
-    }
+    body,html {margin:0;padding:0;height:100%;background:#000;display:flex;}
+    #player {flex:3;border:none;width:100%;height:100%;}
+    #chat {flex:1;border:none;width:100%;height:100%;}
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="player">
-      <iframe id="playerEmbed" allowfullscreen></iframe>
-    </div>
-    <div class="chat">
-      <iframe id="chatEmbed"></iframe>
-    </div>
-  </div>
+  <iframe id="player"></iframe>
+  <iframe id="chat"></iframe>
 
   <script>
-    // ========================
-    // 🔒 Verificación de dominio
-    // ========================
-    (function() {
-      const allowedDomains = ["streamlive.chat", "streamlivechat.dev.ar"];
-      const currentDomain = window.location.hostname;
+    const params = new URLSearchParams(location.search);
+    const playerUrl = params.get("u");
+    const chatUser = params.get("c");
+    const platform = params.get("p");
+    const domain = window.location.hostname;
 
-      if (!allowedDomains.includes(currentDomain)) {
-        document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:50px'>Acceso no autorizado</h2>";
-        throw new Error("Domain not allowed: " + currentDomain);
-      }
-    })();
-
-    // ========================
-    // 📺 Player & Chat config
-    // ========================
-    function getParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
+    // Player libre
+    if (playerUrl) {
+      document.getElementById("player").src = playerUrl;
+    } else {
+      document.getElementById("player").srcdoc = "<h2 style='color:white;text-align:center;margin-top:50px'>Falta parámetro u (URL del player)</h2>";
     }
 
-    const platform = getParam("p");   // youtube | twitch | kick
-    const channel  = getParam("u");   // canal/ID del stream
-    const domain   = window.location.hostname;
-
-    const player   = document.getElementById("playerEmbed");
-    const chat     = document.getElementById("chatEmbed");
-
+    // Chat según plataforma
+    let chatSrc = "";
     if (platform === "youtube") {
-      player.src = `https://www.youtube.com/embed/${channel}?autoplay=1`;
-      chat.src   = `https://www.youtube.com/live_chat?v=${channel}&embed_domain=${domain}`;
-    } 
-    else if (platform === "twitch") {
-      player.src = `https://player.twitch.tv/?channel=${channel}&parent=${domain}&autoplay=true`;
-      chat.src   = `https://www.twitch.tv/embed/${channel}/chat?parent=${domain}`;
-    } 
-    else if (platform === "kick") {
-      player.src = `https://player.kick.com/${channel}?autoplay=true&parent=${domain}`;
-      chat.src   = `https://kick.com/${channel}/chatroom?embed_domain=${domain}`;
-    } 
-    else {
-      document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:50px'>Plataforma no soportada</h2>";
+      chatSrc = `https://www.youtube.com/live_chat?v=${chatUser}&embed_domain=${domain}`;
+    } else if (platform === "twitch") {
+      chatSrc = `https://www.twitch.tv/embed/${chatUser}/chat?parent=${domain}`;
+    } else if (platform === "kick") {
+      chatSrc = `https://kick.com/${chatUser}/chatroom?embed_domain=${domain}`;
+    }
+
+    if (chatSrc) {
+      document.getElementById("chat").src = chatSrc;
+    } else {
+      document.getElementById("chat").srcdoc = "<h2 style='color:white;text-align:center;margin-top:50px'>Falta chat o plataforma no válida</h2>";
     }
   </script>
 </body>
