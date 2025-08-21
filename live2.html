@@ -2,121 +2,98 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <title>Live Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live</title>
   <style>
     body {
-      font-family: "Roboto Condensed", sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f4f4f9;
-      color: #333;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
     }
-    header {
-      text-align: center;
-      padding: 20px;
-    }
-    header img {
-      max-width: 180px;
-    }
-    h1 {
-      margin-top: 10px;
-    }
-    .content {
+    .container {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 20px;
-    }
-    .streams {
-      flex: 2;
-      min-width: 300px;
-    }
-    .streams iframe {
+      flex-direction: row;
+      height: 100vh;
       width: 100%;
-      height: 360px;
-      border: none;
-      margin-bottom: 15px;
+    }
+    .player {
+      flex: 3;
+      background: #111;
     }
     .chat {
       flex: 1;
-      min-width: 300px;
+      background: #222;
     }
-    .chat iframe {
+    iframe {
       width: 100%;
-      height: 600px;
+      height: 100%;
       border: none;
+    }
+    @media(max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      .player, .chat {
+        flex: 1;
+        height: 50vh;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <a href="/"><img id="logo" alt="Logo"></a>
-    <h1 id="titulo"></h1>
-  </header>
-
-  <div class="content">
-    <div class="streams" id="streams"></div>
-    <div class="chat" id="chat"></div>
+  <div class="container">
+    <div class="player">
+      <iframe id="playerEmbed" allowfullscreen></iframe>
+    </div>
+    <div class="chat">
+      <iframe id="chatEmbed"></iframe>
+    </div>
   </div>
 
-  <div id="ads"></div>
-
   <script>
-    // Leer los parámetros
-    const urlParams = new URLSearchParams(window.location.search);
-    const encoded = urlParams.get("data");
+    // ========================
+    // 🔒 Verificación de dominio
+    // ========================
+    (function() {
+      const allowedDomains = ["streamlive.chat", "streamlivechat.dev.ar"];
+      const currentDomain = window.location.hostname;
 
-    if (encoded) {
-      const decoded = atob(encoded);
-      const params = new URLSearchParams(decoded);
-
-      // Título
-      document.title = params.get("titulo") || "Live";
-      document.getElementById("titulo").textContent = params.get("titulo") || "Live Stream";
-
-      // Logo
-      const logo = params.get("logo");
-      if (logo) document.getElementById("logo").src = logo;
-
-      // Streams
-      const streamsContainer = document.getElementById("streams");
-      for (let i = 1; i <= 6; i++) {
-        const url = params.get(`stream-url${i}`);
-        if (url) {
-          const name = params.get(`name${i}`) || `Stream ${i}`;
-          const sandbox = params.get(`sandbox${i}`) !== null; // si existe, está checked
-          const iframe = document.createElement("iframe");
-          iframe.src = url;
-          if (sandbox) iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups");
-          streamsContainer.appendChild(iframe);
-        }
+      if (!allowedDomains.includes(currentDomain)) {
+        document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:50px'>Acceso no autorizado</h2>";
+        throw new Error("Domain not allowed: " + currentDomain);
       }
+    })();
 
-      // Chat
-      const chatUser = params.get("chat");
-      const platform = params.get("platform");
-      if (chatUser && platform) {
-        let chatEmbed = "";
-        if (platform === "twitch") {
-          chatEmbed = `<iframe src="https://www.twitch.tv/embed/${chatUser}/chat?parent=${location.hostname}"></iframe>`;
-        } else if (platform === "youtube") {
-          chatEmbed = `<iframe src="https://www.youtube.com/live_chat?v=${chatUser}&embed_domain=${location.hostname}"></iframe>`;
-        } else if (platform === "kick") {
-          chatEmbed = `<iframe src="https://kick.com/${chatUser}/chatroom"></iframe>`;
-        }
-        document.getElementById("chat").innerHTML = chatEmbed;
-      }
+    // ========================
+    // 📺 Player & Chat config
+    // ========================
+    function getParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
 
-      // Ads (inserta script directamente)
-      const adsCode = params.get("script");
-      if (adsCode) {
-        const adsDiv = document.getElementById("ads");
-        adsDiv.innerHTML = adsCode;
-      }
-    } else {
-      document.body.innerHTML = "<h2>No se recibieron datos</h2>";
+    const platform = getParam("p");   // youtube | twitch | kick
+    const channel  = getParam("u");   // canal/ID del stream
+    const domain   = window.location.hostname;
+
+    const player   = document.getElementById("playerEmbed");
+    const chat     = document.getElementById("chatEmbed");
+
+    if (platform === "youtube") {
+      player.src = `https://www.youtube.com/embed/${channel}?autoplay=1`;
+      chat.src   = `https://www.youtube.com/live_chat?v=${channel}&embed_domain=${domain}`;
+    } 
+    else if (platform === "twitch") {
+      player.src = `https://player.twitch.tv/?channel=${channel}&parent=${domain}&autoplay=true`;
+      chat.src   = `https://www.twitch.tv/embed/${channel}/chat?parent=${domain}`;
+    } 
+    else if (platform === "kick") {
+      player.src = `https://player.kick.com/${channel}?autoplay=true&parent=${domain}`;
+      chat.src   = `https://kick.com/${channel}/chatroom?embed_domain=${domain}`;
+    } 
+    else {
+      document.body.innerHTML = "<h2 style='color:white;text-align:center;margin-top:50px'>Plataforma no soportada</h2>";
     }
   </script>
 </body>
