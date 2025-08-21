@@ -1,21 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YM7W2BEMD1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-YM7W2BEMD1');
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <script type="text/javascript" src="https://platform-api.sharethis.com/js/sharethis.js#property=6697b2d6595beb00197dfa10&product=inline-share-buttons&source=platform" async="async"></script>
     <title id="page-title">Stream Live</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <style>
         body {
             display: flex;
@@ -23,88 +13,95 @@
             margin: 0;
             padding: 0;
             font-family: "Roboto Condensed", sans-serif;
-            background-color: #000000;
+            background-color: #000;
         }
-        .columna {
-            padding: 0px;
-            box-sizing: border-box;
-        }
-        .columna-80 {
-            flex: 0 0 75%;
-        }
-        .columna-20 {
-            flex: 0 0 25%;
-            height: 100vh;
-        }
-        @media (max-width: 768px) {
-            .columna-80, .columna-20 {
-                flex: 0 0 100%;
-            }
-        }
-        .iframe-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-        }
-        .iframe-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
-        .top-container {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background-color: #18181b;
-            width: 100%;
-        }
-        .logo {
-            max-width: 150px;
-            max-height: 50px;
-            margin-right: 10px;
-        }
-        .buttons-container {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .buttons-container button {
-            margin: 2px;
-            padding: 5px 15px 5px 15px;
-            background-color: #e41d25;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: "Roboto Condensed", sans-serif;
-        }
-        .buttons-container button:hover {
-            background-color: #0056b3;
-        }
+        .columna { padding: 0; box-sizing: border-box; }
+        .columna-80 { flex: 0 0 75%; }
+        .columna-20 { flex: 0 0 25%; height: 100vh; }
+        @media (max-width: 768px) { .columna-80, .columna-20 { flex: 0 0 100%; } }
+        .iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; }
+        .iframe-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+        .buttons-container { display: flex; flex-wrap: wrap; margin-top:5px; }
+        .buttons-container button { margin: 2px; padding: 5px 15px; background-color: #e41d25; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+        .buttons-container button:hover { background-color: #0056b3; }
     </style>
-
 </head>
 <body>
     <div class="columna columna-80">
         <div class="iframe-container"></div>
-       <div id="link" class="buttons-container" style="float: right;"></div>
-        <div id="pzn3xksu"></div>
-<script type="text/javascript">
-	atOptions = {
-		'key' : '3e9c0feb060b69d8e47f340655b10e1f',
-		'format' : 'iframe',
-		'height' : 60,
-		'width' : 468,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.topcreativeformat.com/3e9c0feb060b69d8e47f340655b10e1f/invoke.js"></script>
+        <div id="link" class="buttons-container" style="float:right;"></div>
     </div>
+
     <div class="columna columna-20">
-        <iframe id="chat_embed" src="https://www.twitch.tv/embed/streamlivechat/chat?darkpopout&no-mobile-redirect=true&parent=streamlivechat.dev.ar" frameborder="0" scrolling="no" height="100%" width="100%"></iframe>
+        <iframe id="chat_embed" frameborder="0" scrolling="no" height="100%" width="100%"></iframe>
     </div>
+
+    <script>
+        // Decodifica base64 de parámetros GET
+        function decodeBase64Params(str){
+            const decoded = atob(str);
+            return new URLSearchParams(decoded);
+        }
+
+        // Obtiene parámetro de URL
+        function getParameterByName(name){
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Crea iframe principal
+        function createPlayer(url){
+            const container = document.querySelector('.iframe-container');
+            container.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.frameBorder = 0;
+            iframe.width = '100%';
+            iframe.height = '100%';
+            container.appendChild(iframe);
+        }
+
+        // Configura chat según plataforma
+        function createChat(platform, user){
+            const domain = window.location.hostname;
+            let chatSrc = '';
+            if(platform === 'youtube') chatSrc = `https://www.youtube.com/live_chat?v=${user}&embed_domain=${domain}`;
+            else if(platform === 'twitch') chatSrc = `https://www.twitch.tv/embed/${user}/chat?parent=${domain}`;
+            else if(platform === 'kick') chatSrc = `https://kick.com/${user}/chatroom?embed_domain=${domain}`;
+            if(chatSrc) document.getElementById('chat_embed').src = chatSrc;
+            else document.getElementById('chat_embed').srcdoc = '<p style="color:white;">Chat no disponible</p>';
+        }
+
+        // Botón para copiar link
+        function createShareButton(base64){
+            const container = document.getElementById('link');
+            const btn = document.createElement('button');
+            btn.textContent = 'Copiar link';
+            btn.onclick = async () => {
+                const url = `${window.location.origin}${window.location.pathname}?get=${base64}`;
+                try { await navigator.clipboard.writeText(url); alert('Link copiado: ' + url); }
+                catch(e){ alert('Error copiando link'); }
+            };
+            container.appendChild(btn);
+        }
+
+        // Carga todo
+        window.onload = function(){
+            const encoded = getParameterByName('get');
+            if(!encoded) return;
+
+            const params = decodeBase64Params(encoded);
+            const playerUrl = params.get('player'); // URL del iframe
+            const chatPlatform = params.get('platform'); // youtube, twitch, kick
+            const chatUser = params.get('chat'); // ID o usuario del chat
+            const title = params.get('titulo');
+
+            if(title) document.title = title;
+
+            if(playerUrl) createPlayer(playerUrl);
+            if(chatPlatform && chatUser) createChat(chatPlatform, chatUser);
+            createShareButton(encoded);
+        }
+    </script>
 </body>
 </html>
